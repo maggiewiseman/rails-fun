@@ -1,0 +1,6 @@
+.git
+.dockerignore
+.env
+learn-rails/node_modules/
+learn-rails/vendor/bundle/
+learn-rails/tmp/
