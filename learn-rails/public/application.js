@@ -15,65 +15,7 @@ const Helpers = {
 }
 
 let app = {
-  dictionary: [
-    'tooth',
-    'chomp', 
-    'roast', 
-    'meter', 
-    'stare', 
-    'whale',
-    'crown',
-    'bayou',
-    'trick',
-    'cheat',
-    'crick',
-    'brook',
-    'brick',
-    'money',
-    'honey',
-    'paper',
-    'trick',
-    'quick',
-    'photo',
-    'clomp',
-    'clump',
-    'trump',
-    'final',
-    'payer',
-    'pound',
-    'crowd',
-    'quite',
-    'quiet',
-    'quell',
-    'smell',
-    'treat',
-    'doily',
-    'steam',
-    'waste',
-    'fling',
-    'drink',
-    'click',
-    'oxide',
-    'vapor',
-    'bring',
-    'dream',
-    'choir',
-    'sugar',
-    'sweet',
-    'clown',
-    'rough',
-    'asset',
-    'scowl',
-    'opine',
-    'scoop',
-    'sling',
-    'smokey',
-    'showy',
-    'lunch',
-    'album'
-  ],
-  
-  currentWord: "",
+  guessedWord: "",
   submittedWordCount: 0,
   currentRowDomChildren: null,
   checkWordBtn: null,
@@ -90,30 +32,32 @@ let app = {
   },
     
   handleLetterSubmission: (event) => {      
-    if (event.key.toLowerCase() == 'backspace' && app.currentWord.length > 0) {
-      let index = app.currentWord.length - 1;
+    if (event.key.toLowerCase() == 'backspace' && app.guessedWord.length > 0) {
+      let index = app.guessedWord.length - 1;
       app.currentRowDomChildren[index].innerHTML = "";
-      app.currentWord = app.currentWord.substr(0, app.currentWord.length - 1);
-    } else if (app.currentWord.length < 5 && app.isLetter.test(event.key) && event.key.length === 1) {
-      let index = app.currentWord.length;
+      app.guessedWord = app.guessedWord.substr(0, app.guessedWord.length - 1);
+    } else if (app.guessedWord.length < 5 && app.isLetter.test(event.key) && event.key.length === 1) {
+      let index = app.guessedWord.length;
       app.currentRowDomChildren[index].innerHTML = event.key
-      app.currentWord += event.key
+      app.guessedWord += event.key
 
     }
     app.checkWordLength()
   },
 
   handleWordSubmission(event) {
-    // if (!app.wordIsInDictionary()) { 
-    //   alert(`${app.currentWord} is not in my dictionary`);
-    //   return; 
-    // }
+    if (!app.wordIsInDictionary()) { 
+      alert(`${app.guessedWord} is not in my dictionary`);
+      return; 
+    }
 
     let result = app.compareWords();
     app.displayResult(result)
 
-    if (app.currentWord === app.gameAnswer) {
-      alert('You win!!')
+    if (app.guessedWord === app.gameAnswer) {
+      setTimeout(() => {
+        alert('You win!!')
+      }, 0)
     }
 
     app.setupForNextWord();
@@ -121,14 +65,14 @@ let app = {
   },
 
   compareWords() {
-    let currentWordHash = app.getLetterCountHash(app.currentWord);
+    let guessedWordHash = app.getLetterCountHash(app.guessedWord);
     
     let result = Array(5);
-    for(const letter in currentWordHash) {
+    for(const letter in guessedWordHash) {
       if (app.gameAnswerHash[letter]) {
-        app.handlePotentialMatches(currentWordHash, letter, result)
+        app.handlePotentialMatches(guessedWordHash, letter, result)
       } else {
-        let indexes = currentWordHash[letter];
+        let indexes = guessedWordHash[letter];
         indexes.forEach(index => {
           result[index] = "INCORRECT"
         })
@@ -137,22 +81,22 @@ let app = {
     return result;
   },
 
-  handlePotentialMatches(currentWordHash, letter, result) {
-    let currWordIndexes = currentWordHash[letter];
-    console.log(currentWordHash)
+  handlePotentialMatches(guessedWordHash, letter, result) {
+    let guessedWordIndexes = guessedWordHash[letter];
+    console.log(guessedWordHash)
     let answerIndexes = app.gameAnswerHash[letter];
 
-    if (currWordIndexes.length == answerIndexes.length) {
+    if (guessedWordIndexes.length == answerIndexes.length) {
       //2,4 1,3
       //2,4, 2,3
       //2,4  1,4
-      currWordIndexes.forEach(index => {
+      guessedWordIndexes.forEach(index => {
         result[index] =  answerIndexes.includes(index) ? "CORRECT" : "WRONG_PLACE"
       })
-    } else if (currWordIndexes.length > answerIndexes.length) {
+    } else if (guessedWordIndexes.length > answerIndexes.length) {
       let matchesFound = 0;
       let nonMatchingIndexes = [];
-      currWordIndexes.forEach(index => {
+      guessedWordIndexes.forEach(index => {
         //1, guessed 2,3
         if (answerIndexes.includes(index)) {
           result[index] = "CORRECT";
@@ -174,7 +118,7 @@ let app = {
       //more letters than guessed
       //2,4 only guessed 1
       //2,4 only guessed 2 or 4
-      currWordIndexes.forEach(index => {
+      guessedWordIndexes.forEach(index => {
         result[index] =  answerIndexes.includes(index) ? "CORRECT" : "WRONG_PLACE"
       })
     }
@@ -182,7 +126,7 @@ let app = {
   
   wordIsInDictionary() {
     console.log('this', this);
-    return this.dictionary.indexOf(this.currentWord) > -1;
+    return this.dictionary.indexOf(this.guessedWord) > -1;
   },
 
   displayResult(result) {
@@ -217,14 +161,13 @@ let app = {
     if (this.submittedWordCount < 5) {
       this.submittedWordCount += 1;
       this.currentRowDomChildren = document.getElementsByClassName('word')[this.submittedWordCount].children;
-      this.currentWord = "";
+      this.guessedWord = "";
       this.checkWordBtn.setAttribute('disabled', '');
     }
   },
 
   checkWordLength() {
-    console.log(this.currentWord.length)
-    if (this.currentWord.length == 5) {
+    if (this.guessedWord.length == 5) {
       this.checkWordBtn.removeAttribute('disabled');
     } else {
       this.checkWordBtn.setAttribute('disabled', '');
@@ -237,7 +180,7 @@ let app = {
   },
 
   getLetterCountHash(word) {
-    let wordArr = word.split(",");
+    let wordArr = word.split("");
     let wordHash = {}
 
     wordArr.forEach((letter, index) => {
